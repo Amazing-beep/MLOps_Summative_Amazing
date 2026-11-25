@@ -1,0 +1,40 @@
+{% extends 'base.html' %}{% block title %}Upload &amp; Retrain{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Upload data &amp; retrain</h1>
+<p>Add newly labelled encounters, store them in the database, then fine-tune the pre-trained LightGBM model on them. The original preprocessing is reused unchanged, and every new model version is compared with its parent before you rely on it.</p></div>
+<div class="grid g2" style="align-items:start">
+<div class="card"><h2>1 · Upload labelled data</h2>
+  <p class="hint">CSV with the same columns as the original <code>diabetic_data.csv</code> (including the <code>readmitted</code> label: <code>&lt;30</code>, <code>&gt;30</code> or <code>NO</code>). At least {{ min_rows }} valid rows with ≥10 of each class. Sample files:
+   <a href="/samples/sample_retrain_small.csv">small (1,500 rows)</a> · <a href="/samples/sample_retrain_large.csv">large (6,000 rows)</a>.</p>
+  <div class="dropzone" id="drop"><p style="margin:0 0 8px"><strong>Drop a CSV here</strong> or choose a file</p>
+    <input type="file" id="file" accept=".csv" aria-label="Labelled CSV file"><div id="fname" class="hint"></div></div>
+  <div class="toolbar" style="margin-top:12px"><button class="btn" id="upload" type="button">Validate &amp; save to database</button></div>
+  <div id="umsg" aria-live="polite"></div>
+</div>
+<div class="card"><h2>2 · Retrain (fine-tune)</h2>
+  <p class="hint">Continues gradient boosting from the active model (<strong id="parent">{{ active.name }}</strong>) using the stored uploads. 20% of the data is held out to validate and to early-stop.</p>
+  <div class="row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div><label for="trees">Max additional trees</label><input type="number" id="trees" min="1" max="500" value="{{ ft_trees }}"></div>
+    <div><label for="lr">Learning rate</label><input type="number" id="lr" step="0.001" min="0.001" max="0.3" value="{{ ft_lr }}"></div>
+  </div>
+  <label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-weight:500"><input type="checkbox" id="activate" checked style="width:auto"> Use the new model for predictions when training finishes</label>
+  <div class="toolbar"><button class="btn" id="retrain" type="button" {{ 'disabled' if not stats.training_records }}>Retrain model</button>
+   <span class="hint" id="count">{{ '{:,}'.format(stats.training_records) }} stored record(s) available</span></div>
+  <div id="rmsg" aria-live="polite"></div>
+  <div id="rres"></div>
+</div></div>
+
+<div class="card" style="margin-top:16px"><h2>Uploaded datasets (database)</h2>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>File</th><th>Uploaded (UTC)</th><th class="num">Stored</th><th class="num">Positives</th><th class="num">Rejected</th><th class="num">Duplicates</th></tr></thead>
+<tbody id="uploads">{% for u in uploads %}<tr><td>{{ u.id }}</td><td>{{ u.filename }}</td><td>{{ u.uploaded_at }}</td><td class="num">{{ '{:,}'.format(u.rows_stored) }}</td><td class="num">{{ '{:,}'.format(u.positives) }}</td><td class="num">{{ u.rows_rejected }}</td><td class="num">{{ u.rows_duplicate }}</td></tr>
+{% else %}<tr><td colspan="7" class="muted">Nothing uploaded yet.</td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="card" style="margin-top:16px"><h2>Model versions</h2>
+<div class="tablewrap"><table><thead><tr><th>Version</th><th>Created (UTC)</th><th class="num">Ref. ROC-AUC</th><th class="num">Train rows</th><th>Status</th><th></th></tr></thead><tbody id="versions">
+{% for v in versions %}{% set ref = (v.metrics.get('reference_test') or {}).get('after') or v.metrics.get('test') or {} %}
+<tr class="{{ 'active' if v.is_active }}"><td>{{ v.name }}</td><td>{{ v.created_at }}</td><td class="num">{{ '%.4f'|format(ref.roc_auc) if ref.roc_auc else '–' }}</td><td class="num">{{ v.n_train or '–' }}</td>
+<td>{% if v.is_active %}<span class="badge lo">Active</span>{% else %}<span class="badge neutral">Stored</span>{% endif %}</td>
+<td>{% if not v.is_active %}<button class="btn ghost sm act" data-id="{{ v.id }}">Activate</button>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+<p class="hint">Ref. ROC-AUC: evaluated on a fixed 3,000-encounter sample of the original held-out test split (never used for training). v1 shows the full 15,000-row test AUC.</p></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/retrain.js') }}"></script>{% endblock %}

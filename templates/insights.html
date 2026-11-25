@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% block title %}Data Insights{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Data insights</h1><p>Exploration of the real UCI Diabetes 130-US Hospitals dataset used to train the model. Rates are the share of encounters readmitted within 30 days, after the original clinical exclusions.</p></div>
+<div class="grid g4" id="kpis"><div class="card"><div class="skeleton"></div></div></div>
+<div class="grid g2" style="margin-top:16px">
+  <div class="card"><h2>Prior inpatient stays</h2><p class="hint">Strongest single signal in the data.</p><div id="c_inp" class="chart"></div></div>
+  <div class="card"><h2>Primary diagnosis group</h2><div id="c_diag" class="chart"></div></div>
+  <div class="card"><h2>Age bracket</h2><div id="c_age" class="chart"></div></div>
+  <div class="card"><h2>Length of stay</h2><div id="c_los" class="chart"></div></div>
+  <div class="card"><h2>Number of medications</h2><div id="c_meds" class="chart"></div></div>
+  <div class="card"><h2>HbA1c test result</h2><div id="c_a1c" class="chart"></div></div>
+  <div class="card"><h2>Insulin management</h2><div id="c_ins" class="chart"></div></div>
+  <div class="card"><h2>Class balance</h2><div id="c_cls" class="chart"></div><p class="hint">Severe imbalance (~1:8) is why the model uses cost-sensitive weighting.</p></div>
+</div>
+<div class="card" style="margin-top:16px"><h2>Top model features</h2><p class="hint">Share of total gain in the deployed LightGBM model.</p><div id="c_imp" class="chart"></div></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/insights.js') }}"></script>{% endblock %}

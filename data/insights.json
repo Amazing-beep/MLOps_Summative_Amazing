@@ -1,0 +1,292 @@
+{
+  "dataset": {
+    "raw_rows": 101766,
+    "raw_columns": 50,
+    "unique_patients": 71518,
+    "eligible_rows": 100114,
+    "eligible_patients": 70439,
+    "positives": 11357,
+    "prevalence_pct": 11.34,
+    "raw_label_counts": {
+      "NO": 54864,
+      ">30": 35545,
+      "<30": 11357
+    }
+  },
+  "by_age": [
+    {
+      "label": "[0-10)",
+      "rate": 1.88,
+      "n": 160
+    },
+    {
+      "label": "[10-20)",
+      "rate": 5.8,
+      "n": 690
+    },
+    {
+      "label": "[20-30)",
+      "rate": 14.3,
+      "n": 1650
+    },
+    {
+      "label": "[30-40)",
+      "rate": 11.26,
+      "n": 3765
+    },
+    {
+      "label": "[40-50)",
+      "rate": 10.67,
+      "n": 9626
+    },
+    {
+      "label": "[50-60)",
+      "rate": 9.75,
+      "n": 17102
+    },
+    {
+      "label": "[60-70)",
+      "rate": 11.28,
+      "n": 22185
+    },
+    {
+      "label": "[70-80)",
+      "rate": 12.01,
+      "n": 25562
+    },
+    {
+      "label": "[80-90)",
+      "rate": 12.44,
+      "n": 16706
+    },
+    {
+      "label": "[90-100)",
+      "rate": 11.62,
+      "n": 2668
+    }
+  ],
+  "by_prior_inpatient": [
+    {
+      "label": "0",
+      "rate": 8.56,
+      "n": 66672
+    },
+    {
+      "label": "1",
+      "rate": 13.17,
+      "n": 19163
+    },
+    {
+      "label": "2",
+      "rate": 17.87,
+      "n": 7382
+    },
+    {
+      "label": "3+",
+      "rate": 26.23,
+      "n": 6897
+    }
+  ],
+  "by_los": [
+    {
+      "label": "1-2 d",
+      "rate": 9.31,
+      "n": 30854
+    },
+    {
+      "label": "3-4 d",
+      "rate": 11.3,
+      "n": 31321
+    },
+    {
+      "label": "5-7 d",
+      "rate": 12.61,
+      "n": 23003
+    },
+    {
+      "label": "8+ d",
+      "rate": 13.69,
+      "n": 14936
+    }
+  ],
+  "by_meds": [
+    {
+      "label": "0-10",
+      "rate": 9.19,
+      "n": 25497
+    },
+    {
+      "label": "11-15",
+      "rate": 11.04,
+      "n": 29052
+    },
+    {
+      "label": "16-20",
+      "rate": 12.37,
+      "n": 22285
+    },
+    {
+      "label": "21+",
+      "rate": 13.11,
+      "n": 23280
+    }
+  ],
+  "by_diag1": [
+    {
+      "label": "Missing",
+      "rate": 23.81,
+      "n": 21
+    },
+    {
+      "label": "Diabetes",
+      "rate": 13.08,
+      "n": 8693
+    },
+    {
+      "label": "Injury",
+      "rate": 12.41,
+      "n": 6881
+    },
+    {
+      "label": "Circulatory",
+      "rate": 11.66,
+      "n": 29881
+    },
+    {
+      "label": "Other",
+      "rate": 11.66,
+      "n": 17887
+    },
+    {
+      "label": "Genitourinary",
+      "rate": 10.98,
+      "n": 5054
+    },
+    {
+      "label": "Digestive",
+      "rate": 10.82,
+      "n": 9380
+    },
+    {
+      "label": "Neoplasms",
+      "rate": 10.49,
+      "n": 3299
+    },
+    {
+      "label": "Respiratory",
+      "rate": 9.97,
+      "n": 14074
+    },
+    {
+      "label": "Musculoskeletal",
+      "rate": 9.53,
+      "n": 4944
+    }
+  ],
+  "by_a1c": [
+    {
+      "label": "None",
+      "rate": 11.63,
+      "n": 83238
+    },
+    {
+      "label": "Norm",
+      "rate": 9.76,
+      "n": 4941
+    },
+    {
+      "label": ">7",
+      "rate": 10.12,
+      "n": 3784
+    },
+    {
+      "label": ">8",
+      "rate": 9.95,
+      "n": 8151
+    }
+  ],
+  "by_insulin": [
+    {
+      "label": "No",
+      "rate": 10.19,
+      "n": 46680
+    },
+    {
+      "label": "Steady",
+      "rate": 11.32,
+      "n": 30331
+    },
+    {
+      "label": "Down",
+      "rate": 14.14,
+      "n": 12012
+    },
+    {
+      "label": "Up",
+      "rate": 13.25,
+      "n": 11091
+    }
+  ],
+  "feature_importance": [
+    {
+      "feature": "number_inpatient",
+      "gain": 24.27
+    },
+    {
+      "feature": "discharge_disp_str_DischDisp_1",
+      "gain": 8.19
+    },
+    {
+      "feature": "procedure_to_med_ratio",
+      "gain": 5.8
+    },
+    {
+      "feature": "medication_density",
+      "gain": 5.32
+    },
+    {
+      "feature": "num_lab_procedures",
+      "gain": 4.83
+    },
+    {
+      "feature": "num_medications",
+      "gain": 4.13
+    },
+    {
+      "feature": "number_diagnoses",
+      "gain": 3.23
+    },
+    {
+      "feature": "discharge_disp_str_DischDisp_22",
+      "gain": 3.02
+    },
+    {
+      "feature": "time_in_hospital",
+      "gain": 2.58
+    },
+    {
+      "feature": "total_visits_prior",
+      "gain": 1.9
+    },
+    {
+      "feature": "age_num",
+      "gain": 1.82
+    },
+    {
+      "feature": "num_procedures",
+      "gain": 1.5
+    },
+    {
+      "feature": "number_emergency",
+      "gain": 1.42
+    },
+    {
+      "feature": "diag_1_group_Circulatory",
+      "gain": 0.99
+    },
+    {
+      "feature": "number_outpatient",
+      "gain": 0.94
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{% endblock %} · Readmission Risk</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d7c8f'/><path d='M50 22v56M22 50h56' stroke='white' stroke-width='14' stroke-linecap='round'/></svg>">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<header class="top"><nav class="nav" aria-label="Main">
+  <a class="brand" href="/"><span class="logo">+</span><span>Readmission Risk</span></a>
+  {% for key, href, label in [('dashboard','/','Dashboard'),('predict','/predict','Predict'),('retrain','/retrain','Upload &amp; Retrain'),('model','/model','Model Evaluation'),('insights','/insights','Data Insights')] %}
+  <a class="link {{ 'on' if page==key }}" href="{{ href }}" {{ 'aria-current=page' if page==key }}>{{ label|safe }}</a>
+  {% endfor %}
+  <span class="spacer"></span>
+  <span class="pill" title="Model currently used for predictions">Active: {{ active.name.split(' - ')[0] }}</span>
+</nav></header>
+<main>{% block content %}{% endblock %}</main>
+<footer>Diabetes 130-US Hospitals (UCI, 1999–2008) · 30-day readmission risk stratification tool. Decision support only — not a diagnostic device.</footer>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body></html>

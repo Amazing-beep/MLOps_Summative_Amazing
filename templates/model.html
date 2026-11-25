@@ -1,0 +1,55 @@
+{% extends 'base.html' %}{% block title %}Model Evaluation{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Model evaluation</h1>
+<p>Results of the original model-development notebook (<code>notebooks/diabetes_readmission_classification.ipynb</code>): 10 systematically varied experiments on a patient-grouped 70/15/15 split of the UCI Diabetes 130-US Hospitals data. The deployed model is the cost-sensitive LightGBM (EXP-ML-05).</p></div>
+{% set t = base.test or {} %}{% set v = base.validation or {} %}
+<div class="grid g4">
+  {% for k,l in [('roc_auc','Test ROC-AUC'),('recall','Test recall'),('f1','Test F1-score'),('accuracy','Test accuracy')] %}
+  <div class="card stat"><div class="l">{{ l }}</div><div class="v">{{ '%.4f'|format(t[k]) if t else '–' }}</div><div class="d">Validation: {{ '%.4f'|format(v[k]) if v else '–' }}</div></div>{% endfor %}
+</div>
+<div class="grid g2" style="margin-top:16px;align-items:start">
+<div class="card"><h2>Deployed model: full test metrics</h2>
+{% if t %}<div class="tablewrap"><table><thead><tr><th>Metric</th><th class="num">Validation</th><th class="num">Test</th></tr></thead><tbody>
+{% for k,l in [('roc_auc','ROC-AUC'),('pr_auc','PR-AUC'),('recall','Recall'),('specificity','Specificity'),('precision','Precision'),('f1','F1-score'),('accuracy','Accuracy'),('brier','Brier score (lower better)'),('log_loss','Log-loss (lower better)')] %}
+<tr><td>{{ l }}</td><td class="num">{{ '%.4f'|format(v[k]) }}</td><td class="num"><strong>{{ '%.4f'|format(t[k]) }}</strong></td></tr>{% endfor %}</tbody></table></div>
+<h3 style="margin-top:14px">Confusion matrix (test, threshold 0.5)</h3>
+<div class="tablewrap"><table style="max-width:360px"><thead><tr><th></th><th class="num">Pred. no</th><th class="num">Pred. yes</th></tr></thead><tbody>
+<tr><td>Actual no</td><td class="num">{{ '{:,}'.format(t.tn) }}</td><td class="num">{{ '{:,}'.format(t.fp) }}</td></tr><tr><td>Actual yes</td><td class="num">{{ '{:,}'.format(t.fn) }}</td><td class="num">{{ '{:,}'.format(t.tp) }}</td></tr></tbody></table></div>
+<p class="hint">Reproduced from the original notebook configuration: {{ '{:,}'.format(base.train_encounters) }} train / {{ '{:,}'.format(base.val_encounters) }} validation / {{ '{:,}'.format(base.test_encounters) }} test encounters, {{ base.encoded_features }} encoded features. These match the figures in the original report.</p>{% endif %}</div>
+<div class="card"><h2>Interpretation</h2>
+<ul style="padding-left:18px;margin:0">
+<li><strong>Hard, imbalanced task:</strong> only ≈11% of encounters are 30-day readmissions, so accuracy is misleading; ROC-AUC (≈0.66) and recall are the headline metrics.</li>
+<li><strong>Cost-sensitive learning</strong> (<code>scale_pos_weight=7.8</code>) lifts recall from ≈1–2% (unweighted models) to ≈54%, at the price of lower precision (≈18%) — acceptable for a screening tool where a missed readmission is costlier than a false alarm.</li>
+<li><strong>Leakage control:</strong> patient-grouped splitting means no patient appears in more than one split, so test metrics are not inflated by repeat encounters.</li>
+<li><strong>Traditional ML vs deep learning:</strong> the best LightGBM and the best cost-sensitive deep MLP are statistically very close (test AUC 0.6566 vs 0.6574), so the lighter LightGBM is deployed — it trains in about a second and supports fast retraining.</li>
+</ul>
+<h3 style="margin-top:14px">Top features (gain share)</h3><div id="imp" class="chart"></div></div></div>
+
+<div class="card" style="margin-top:16px"><h2>All 10 experiments (validation set)</h2>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>Family</th><th>Algorithm</th><th class="num">ROC-AUC</th><th class="num">PR-AUC</th><th class="num">Recall</th><th class="num">Precision</th><th class="num">F1</th><th class="num">Accuracy</th></tr></thead><tbody>
+{% for e in experiments %}<tr {% if e.exp_id=='EXP-ML-05' %}class="active"{% endif %}><td>{{ e.exp_id }}</td><td>{{ e.family }}</td><td>{{ e.algorithm }}</td><td class="num">{{ '%.4f'|format(e.val_roc_auc) }}</td><td class="num">{{ '%.4f'|format(e.val_pr_auc) }}</td><td class="num">{{ '%.4f'|format(e.val_recall) }}</td><td class="num">{{ '%.4f'|format(e.val_precision) }}</td><td class="num">{{ '%.4f'|format(e.val_f1) }}</td><td class="num">{{ '%.4f'|format(e.val_accuracy) }}</td></tr>{% endfor %}</tbody></table></div>
+<p class="hint">Source: <code>results/experiment_results.csv</code> from the original Intro-to-ML project (unchanged). Highlighted row = deployed model.</p></div>
+
+<div class="card" style="margin-top:16px"><h2>Held-out test comparison (original report)</h2>
+<div class="tablewrap"><table><thead><tr><th>Model</th><th class="num">ROC-AUC</th><th class="num">PR-AUC</th><th class="num">F1</th><th class="num">Recall</th><th class="num">Precision</th><th class="num">Accuracy</th><th class="num">Specificity</th></tr></thead><tbody>
+{% for r in final %}<tr><td>{{ r['Model'] }}</td><td class="num">{{ '%.4f'|format(r['Test ROC-AUC']) }}</td><td class="num">{{ '%.4f'|format(r['Test PR-AUC']) }}</td><td class="num">{{ '%.4f'|format(r['Test F1']) }}</td><td class="num">{{ '%.4f'|format(r['Test Recall']) }}</td><td class="num">{{ '%.4f'|format(r['Test Precision']) }}</td><td class="num">{{ '%.4f'|format(r['Test Accuracy']) }}</td><td class="num">{{ '%.4f'|format(r['Test Specificity']) }}</td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="grid g2" style="margin-top:16px">
+<figure class="card"><img src="/results/figures/comparative_roc_pr_curves.png" alt="ROC and precision-recall curves"><figcaption>ROC and precision–recall curves (validation) for the best models.</figcaption></figure>
+<figure class="card"><img src="/results/figures/confusion_matrix_traditional_test.png" alt="Confusion matrix of the LightGBM model on the test set"><figcaption>LightGBM confusion matrix on the held-out test set.</figcaption></figure>
+<figure class="card"><img src="/results/figures/exp-dl-04_learning_curves.png" alt="Learning curves of the cost-sensitive deep MLP"><figcaption>Learning curves of the cost-sensitive deep MLP (early stopping, regularisation).</figcaption></figure>
+<figure class="card"><img src="/results/figures/confusion_matrix_deep_learning_test.png" alt="Confusion matrix of the deep MLP on the test set"><figcaption>Deep MLP confusion matrix on the held-out test set.</figcaption></figure>
+</div>
+
+<div class="card" style="margin-top:16px"><h2>Model versions &amp; retraining history</h2>
+<div class="tablewrap"><table><thead><tr><th>Version</th><th>Created</th><th class="num">Trees</th><th class="num">Ref. ROC-AUC before → after</th><th class="num">Ref. recall after</th><th>Status</th></tr></thead><tbody>
+{% for m in versions %}{% set r = (m.metrics.get('reference_test') or {}) %}<tr class="{{ 'active' if m.is_active }}"><td>{{ m.name }}</td><td>{{ m.created_at }}</td>
+<td class="num">{{ m.metrics.get('trees_after','150') }}</td>
+<td class="num">{% if r %}{{ '%.4f'|format(r.before.roc_auc) }} → <strong>{{ '%.4f'|format(r.after.roc_auc) }}</strong>{% else %}test: {{ '%.4f'|format(m.metrics.test.roc_auc) if m.metrics.test else '–' }}{% endif %}</td>
+<td class="num">{{ '%.4f'|format(r.after.recall) if r else '–' }}</td><td>{{ 'Active' if m.is_active else 'Stored' }}</td></tr>{% endfor %}</tbody></table></div>
+<p class="hint">Full notebook with executed outputs: <code>notebooks/diabetes_readmission_classification.ipynb</code> (SHAP interpretation, error analysis, early-stopped deep learning runs).</p></div>
+{% endblock %}
+{% block scripts %}<script>
+const imp = {{ (insights.get('feature_importance') or [])|tojson }};
+if (imp.length) hbars($('#imp'), imp.slice(0, 10).map(f => ({label: f.feature, value: f.gain, note: f.feature})), {fmt: v => v.toFixed(1) + '%'});
+</script>{% endblock %}

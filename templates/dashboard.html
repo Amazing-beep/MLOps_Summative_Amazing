@@ -1,0 +1,34 @@
+{% extends 'base.html' %}{% block title %}Dashboard{% endblock %}
+{% block content %}
+{% set t = base.test or {} %}
+<section class="hero">
+  <h1>30-day hospital readmission risk for patients with diabetes</h1>
+  <p>Predict which diabetic inpatients are likely to return within 30 days of discharge, upload newly labelled encounters, and fine-tune the model — all in one place. Built on the cost-sensitive LightGBM model from the Introduction to ML project.</p>
+  <div class="toolbar"><a class="btn light" href="/predict">Make a prediction</a><a class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.5)" href="/retrain">Upload data &amp; retrain</a></div>
+</section>
+<div class="grid g4">
+  <div class="card stat"><div class="l">Active model</div><div class="v" style="font-size:1.25rem">{{ active.name.split(' - ')[0] }}</div><div class="d">{{ active.name.split(' - ')[1] if ' - ' in active.name }}</div></div>
+  <div class="card stat"><div class="l">Test ROC-AUC (original)</div><div class="v">{{ '%.4f'|format(t.roc_auc) if t else '–' }}</div><div class="d">{{ '{:,}'.format(t.n) if t }} held-out encounters</div></div>
+  <div class="card stat"><div class="l">Training records in database</div><div class="v">{{ '{:,}'.format(stats.training_records) }}</div><div class="d">{{ stats.uploads }} upload(s)</div></div>
+  <div class="card stat"><div class="l">Predictions served</div><div class="v">{{ '{:,}'.format(stats.predictions) }}</div><div class="d">{{ stats.versions }} model version(s)</div></div>
+</div>
+<div class="grid g2" style="margin-top:16px">
+  <div class="card"><h2>How it works</h2>
+    <ol class="steps">
+      <li><div><strong>Predict.</strong> Enter an encounter (or load a real example) and get the probability of readmission within 30 days, with the factors driving it.</div></li>
+      <li><div><strong>Upload.</strong> Add a labelled CSV. It is validated, then stored in a SQLite database.</div></li>
+      <li><div><strong>Retrain.</strong> The pre-trained LightGBM model is fine-tuned on the stored data using the same preprocessing; the new version is evaluated before/after and can be activated or rolled back.</div></li>
+    </ol></div>
+  <div class="card"><h2>Held-out test performance (original model)</h2>
+    {% if t %}<div class="tablewrap"><table>
+      {% for k,l in [('roc_auc','ROC-AUC'),('pr_auc','PR-AUC'),('recall','Recall (sensitivity)'),('specificity','Specificity'),('precision','Precision'),('f1','F1-score'),('accuracy','Accuracy')] %}
+      <tr><td>{{ l }}</td><td class="num"><strong>{{ '%.4f'|format(t[k]) }}</strong></td></tr>{% endfor %}</table></div>
+    <p class="hint">Cost-sensitive threshold 0.5 · patient-grouped split · {{ base.test_encounters }} test encounters. Readmission is a hard task (≈11% prevalence), so the model is a screening aid rather than a precise classifier.</p>
+    {% endif %}</div>
+</div>
+<div class="card" style="margin-top:16px"><h2>Recent predictions</h2>
+{% if recent %}<div class="tablewrap"><table><thead><tr><th>#</th><th>Time (UTC)</th><th>Source</th><th class="num">Probability</th><th>Outcome</th><th>Model</th></tr></thead><tbody>
+{% for r in recent %}<tr><td>{{ r.id }}</td><td>{{ r.created_at }}</td><td>{{ r.source }}</td><td class="num">{{ '%.1f'|format(r.probability*100) }}%</td>
+<td>{% if r.label %}<span class="badge hi">High risk</span>{% else %}<span class="badge lo">Lower risk</span>{% endif %}</td><td>v{{ r.model_version_id }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<p class="muted">No predictions yet. <a href="/predict">Make the first one →</a></p>{% endif %}</div>
+{% endblock %}

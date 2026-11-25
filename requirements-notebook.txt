@@ -1,0 +1,8 @@
+# Extra packages needed to re-run the full model-development notebook
+-r requirements.txt
+matplotlib>=3.7
+seaborn>=0.12
+tensorflow>=2.15
+shap>=0.44
+wandb>=0.16
+jupyter>=1.0

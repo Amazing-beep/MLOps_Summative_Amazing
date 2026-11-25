@@ -1,0 +1,68 @@
+{% extends 'base.html' %}{% block title %}Predict{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Predict 30-day readmission</h1>
+<p>Enter the encounter details at discharge. The model returns the probability that the patient is readmitted within 30 days, using the same preprocessing and model as the original project.</p></div>
+<div class="grid" style="grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);align-items:start" id="layout">
+<div class="card">
+  <div class="toolbar" style="margin-bottom:12px">
+    <div class="grow"><label for="example">Load a real encounter from the dataset (held-out test set)</label>
+      <select id="example"><option value="">— choose an example —</option></select></div>
+    <button class="btn ghost sm" id="reset" type="button">Reset form</button>
+  </div>
+  <form id="pform" novalidate>
+    <fieldset><legend>Patient &amp; stay</legend><div class="row">
+      <div><label for="age">Age bracket</label><select name="age" id="age">{% for a in age_brackets %}<option {{ 'selected' if a==defaults.age }}>{{ a }}</option>{% endfor %}</select></div>
+      <div><label for="gender">Gender</label><select name="gender" id="gender"><option>Female</option><option>Male</option><option>Unknown/Invalid</option></select></div>
+      <div><label for="race">Race</label><select name="race" id="race">{% for r in ['Caucasian','AfricanAmerican','Hispanic','Asian','Other','?'] %}<option>{{ r }}</option>{% endfor %}</select></div>
+      <div><label for="time_in_hospital">Days in hospital</label><input type="number" name="time_in_hospital" id="time_in_hospital" min="1" max="14" value="{{ defaults.time_in_hospital }}"><div class="field-err"></div></div>
+      <div><label for="admission_type_id">Admission type</label><select name="admission_type_id" id="admission_type_id">{% for k,v in admission_types.items() %}<option value="{{ k }}" {{ 'selected' if k==defaults.admission_type_id }}>{{ v }}</option>{% endfor %}</select></div>
+      <div><label for="admission_source_id">Admission source</label><select name="admission_source_id" id="admission_source_id">{% for k,v in sources.items() %}<option value="{{ k }}" {{ 'selected' if k==defaults.admission_source_id }}>{{ v }}</option>{% endfor %}</select></div>
+      <div><label for="discharge_disposition_id">Discharged to</label><select name="discharge_disposition_id" id="discharge_disposition_id">{% for k,v in discharges.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+      <div><label for="medical_specialty">Admitting specialty</label><select name="medical_specialty" id="medical_specialty">{% for s in specialties %}<option value="{{ s }}">{{ 'Unknown' if s=='?' else s }}</option>{% endfor %}</select></div>
+    </div></fieldset>
+    <fieldset><legend>Utilisation history &amp; this stay</legend><div class="row">
+      {% for f,l,hi in [('number_inpatient','Inpatient visits (prior year)',30),('number_emergency','Emergency visits (prior year)',50),('number_outpatient','Outpatient visits (prior year)',50),('num_lab_procedures','Lab procedures',140),('num_procedures','Procedures',10),('num_medications','Medications',100),('number_diagnoses','Number of diagnoses',20)] %}
+      <div><label for="{{ f }}">{{ l }}</label><input type="number" name="{{ f }}" id="{{ f }}" min="0" max="{{ hi }}" value="{{ defaults[f] }}"><div class="field-err"></div></div>{% endfor %}
+    </div></fieldset>
+    <fieldset><legend>Diagnoses (ICD-9)</legend><div class="row">
+      <div><label for="diag_1">Primary</label><input name="diag_1" id="diag_1" value="250" maxlength="10" placeholder="e.g. 428"></div>
+      <div><label for="diag_2">Secondary</label><input name="diag_2" id="diag_2" value="?" maxlength="10"></div>
+      <div><label for="diag_3">Additional</label><input name="diag_3" id="diag_3" value="?" maxlength="10"></div>
+    </div><p class="hint">Use ICD-9 codes (e.g. 250.01 diabetes, 428 heart failure, 486 pneumonia) or “?” if unknown.</p></fieldset>
+    <fieldset><legend>Diabetes management</legend><div class="row">
+      <div><label for="A1Cresult">HbA1c result</label><select name="A1Cresult" id="A1Cresult"><option>None</option><option>Norm</option><option>&gt;7</option><option>&gt;8</option></select></div>
+      <div><label for="max_glu_serum">Glucose serum</label><select name="max_glu_serum" id="max_glu_serum"><option>None</option><option>Norm</option><option>&gt;200</option><option>&gt;300</option></select></div>
+      <div><label for="insulin">Insulin</label><select name="insulin" id="insulin"><option>No</option><option>Steady</option><option>Up</option><option>Down</option></select></div>
+      <div><label for="metformin">Metformin</label><select name="metformin" id="metformin"><option>No</option><option>Steady</option><option>Up</option><option>Down</option></select></div>
+      <div><label for="change">Medication change</label><select name="change" id="change"><option value="No">No change</option><option value="Ch">Changed</option></select></div>
+      <div><label for="diabetesMed">Diabetes medication</label><select name="diabetesMed" id="diabetesMed"><option>Yes</option><option>No</option></select></div>
+    </div><p class="hint">Other diabetes drugs default to “No” unless a loaded example specifies them.</p></fieldset>
+    <div class="toolbar"><button class="btn" id="go" type="submit">Predict readmission risk</button><span class="hint">Predictions are logged to the database.</span></div>
+  </form>
+  <div id="msg" aria-live="polite"></div>
+</div>
+<aside>
+  <div class="card" id="resultcard">
+    <h2>Prediction</h2>
+    <div id="placeholder" class="muted">Submit the form to see the predicted risk, outcome class and key factors.</div>
+    <div class="result" id="result">
+      <div class="muted small">Probability of readmission within 30 days</div>
+      <div class="big" id="prob">–</div>
+      <div class="gauge"><i id="bar" style="width:0"></i><span class="tick" style="left:50%" title="Decision threshold 0.5"></span></div>
+      <div class="hint">Decision threshold 0.5 (cost-sensitive model)</div>
+      <p style="margin:12px 0 4px"><span id="klass" class="badge"></span> <span id="band" class="badge neutral"></span></p>
+      <p id="actual" class="small" style="display:none"></p>
+      <h3 style="margin-top:14px">Key factors</h3><div id="factors"></div>
+      <p class="hint" id="modelname"></p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px"><h2>Batch prediction</h2>
+    <p class="hint">Upload a CSV with the original dataset columns (no label needed). <a href="/samples/sample_unlabeled.csv">Download a sample file</a>.</p>
+    <input type="file" id="bfile" accept=".csv" aria-label="CSV file for batch prediction">
+    <div class="toolbar" style="margin-top:10px"><button class="btn sm" id="bgo" type="button">Predict file</button><button class="btn ghost sm" id="bdl" type="button" style="display:none">Download results</button></div>
+    <div id="bmsg"></div><div id="bres"></div>
+  </div>
+</aside></div>
+<style>@media(max-width:900px){ #layout{grid-template-columns:1fr!important}}</style>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/predict.js') }}"></script>{% endblock %}

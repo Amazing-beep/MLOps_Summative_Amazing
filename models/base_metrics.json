@@ -1,0 +1,48 @@
+{
+  "model": "LightGBM (Cost-Sensitive) - EXP-ML-05",
+  "encoded_features": 206,
+  "train_encounters": 70055,
+  "val_encounters": 15059,
+  "test_encounters": 15000,
+  "validation": {
+    "roc_auc": 0.6813298047919675,
+    "pr_auc": 0.25650845810252665,
+    "accuracy": 0.6738163224649711,
+    "precision": 0.19510774606872452,
+    "recall": 0.567476002258611,
+    "f1": 0.29037850332273907,
+    "specificity": 0.687989163154726,
+    "brier": 0.21095996062173988,
+    "log_loss": 0.6104732180121152,
+    "tp": 1005,
+    "fp": 4146,
+    "tn": 9142,
+    "fn": 766,
+    "n": 15059,
+    "positives": 1771
+  },
+  "test": {
+    "roc_auc": 0.6565547243672243,
+    "pr_auc": 0.20398836365431242,
+    "accuracy": 0.6686666666666666,
+    "precision": 0.1780821917808219,
+    "recall": 0.5416666666666666,
+    "f1": 0.26804123711340205,
+    "specificity": 0.6846846846846847,
+    "brier": 0.21372862249141078,
+    "log_loss": 0.6165259336333999,
+    "tp": 910,
+    "fp": 4200,
+    "tn": 9120,
+    "fn": 770,
+    "n": 15000,
+    "positives": 1680
+  },
+  "hyperparameters": {
+    "n_estimators": 150,
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "scale_pos_weight": 7.8,
+    "random_state": 42
+  }
+}
