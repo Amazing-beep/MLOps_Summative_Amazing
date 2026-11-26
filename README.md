@@ -1,5 +1,18 @@
 # Hospital Readmission Risk — MLOps Deployment
 
+## Submission links
+
+| | |
+|---|---|
+| **Demo video (YouTube)** | <https://youtu.be/gx64T2V79wI> |
+| **Live application (Render)** | <https://readmission-risk-vxl9.onrender.com> |
+| **GitHub repository** | <https://github.com/Amazing-beep/MLOps_Summative_Amazing> (branch `mlops-summative-amazing`) |
+| **Original ML project** | <https://github.com/Amazing-beep/diabetes-readmission-ml-dl> |
+
+**Author:** Nkhomotabo Amazing Mkhonta (`Amazing-beep`)
+
+> The live app runs on Render's free plan: it sleeps when idle (the first load can take about a minute), and uploaded data and retrained models are reset whenever it restarts.
+
 A web application that predicts whether a patient with diabetes will be **readmitted to hospital within 30 days of discharge**, and lets users **upload newly labelled data and fine-tune the model** without leaving the browser.
 
 It operationalises the project from my *Introduction to Machine Learning* summative
