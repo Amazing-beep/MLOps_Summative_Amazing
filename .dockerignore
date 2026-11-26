@@ -1,7 +1,11 @@
 .venv
 .git
+.gitignore
 runtime
 __pycache__
 *.pyc
+.pytest_cache
+dist
+*.zip
 data/diabetic_data.csv
 notebooks
