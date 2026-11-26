@@ -1,4 +1,4 @@
-# Hospital Readmission Risk — MLOps Deploymen
+# Hospital Readmission Risk — MLOps Deployment
 
 A web application that predicts whether a patient with diabetes will be **readmitted to hospital within 30 days of discharge**, and lets users **upload newly labelled data and fine-tune the model** without leaving the browser.
 
