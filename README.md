@@ -10,9 +10,6 @@
 | **Original ML project** | <https://github.com/Amazing-beep/diabetes-readmission-ml-dl> |
 
 **Author:** Nkhomotabo Amazing Mkhonta (`Amazing-beep`)
-
-> The live app runs on Render's free plan: it sleeps when idle (the first load can take about a minute), and uploaded data and retrained models are reset whenever it restarts.
-
 A web application that predicts whether a patient with diabetes will be **readmitted to hospital within 30 days of discharge**, and lets users **upload newly labelled data and fine-tune the model** without leaving the browser.
 
 It operationalises the project from my *Introduction to Machine Learning* summative
